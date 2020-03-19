@@ -1,0 +1,16 @@
+syntax = "proto3";
+
+package binary;
+
+service Greeter {
+    rpc SayHello (DataRequest) returns (DataResponse) {}
+}
+
+message DataRequest {
+    string name = 1;
+    bytes data = 21;
+}
+
+message DataResponse {
+    string message = 1;
+}
