@@ -2,7 +2,7 @@ package main
 
 import (
 	"context"
-	pb "github.com/devplayg/hello_grpc/hello"
+	"github.com/devplayg/hello_grpc/single-and-single"
 	"google.golang.org/grpc"
 	"log"
 	"time"
@@ -15,11 +15,11 @@ func main() {
 	}
 	defer conn.Close()
 
-	client := pb.NewGreeterClient(conn)
+	client := single_and_single.NewGreeterClient(conn)
 	ctx, cancel := context.WithTimeout(context.Background(), time.Second)
 	defer cancel()
 
-	res, err := client.SayHello(ctx, &pb.HelloRequest{Name: "won"})
+	res, err := client.SayHello(ctx, &single_and_single.HelloRequest{Name: "won"})
 	if err != nil {
 		panic(err)
 	}

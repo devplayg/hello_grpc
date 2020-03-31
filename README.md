@@ -1,4 +1,12 @@
 # hello_grpc
 
+### Single request & Single response (Unary RPC)
 
-[Hello](./hello)
+### Single request & Stream response (Server streaming RPC)
+
+### Stream request & Single response (Client streaming RPC)
+
+### Stream request & Stream request (Bidirectional streaming RPC)
+
+
+

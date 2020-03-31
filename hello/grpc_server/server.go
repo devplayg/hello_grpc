@@ -2,19 +2,19 @@ package main
 
 import (
 	"context"
-	pb "github.com/devplayg/hello_grpc/hello"
+	"github.com/devplayg/hello_grpc/single-and-single"
 	"google.golang.org/grpc"
 	"log"
 	"net"
 )
 
 type server struct {
-	pb.UnimplementedGreeterServer
+	single_and_single.UnimplementedGreeterServer
 }
 
-func (s *server) SayHello(ctx context.Context, in *pb.HelloRequest) (*pb.HelloResponse, error) {
+func (s *server) SayHello(ctx context.Context, in *single_and_single.HelloRequest) (*single_and_single.HelloResponse, error) {
 	log.Printf("Received: %v", in.GetName())
-	return &pb.HelloResponse{
+	return &single_and_single.HelloResponse{
 		Message: "Hello " + in.GetName(),
 	}, nil
 }
@@ -26,7 +26,7 @@ func main() {
 	}
 
 	gRpcServer := grpc.NewServer()
-	pb.RegisterGreeterServer(gRpcServer, &server{})
+	single_and_single.RegisterGreeterServer(gRpcServer, &server{})
 	if err := gRpcServer.Serve(ln); err != nil {
 		panic(err)
 	}

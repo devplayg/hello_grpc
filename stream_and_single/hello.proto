@@ -1,9 +1,9 @@
 syntax = "proto3";
 
-package hello;
+package single_and_single;
 
 service Greeter {
-  rpc SayHello (HelloRequest) returns (HelloResponse) {}
+  rpc SayHello (stream HelloRequest) returns (HelloResponse) {}
 }
 
 message HelloRequest {
