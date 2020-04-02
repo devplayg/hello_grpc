@@ -1,16 +1,17 @@
 syntax = "proto3";
 
-package single_and_single;
+package upload;
 
 service DataCenter {
-  rpc Upload (stream HelloRequest) returns (HelloResponse) {}
+    rpc Upload (stream Packet) returns (UploadResult) {
+    }
 }
 
-message HelloRequest {
-  string name = 1;
-  string message = 2;
+message Packet {
+    bytes data = 1;
 }
 
-message HelloResponse {
-  string message = 1;
+message UploadResult {
+    string checksum = 1;
+    int64 size = 2;
 }
