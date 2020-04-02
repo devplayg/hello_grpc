@@ -13,7 +13,7 @@ import (
 
 var (
 	addr = ":50051"
-	size = 64 * 1024
+	size = 10 * 1024
 )
 
 func main() {

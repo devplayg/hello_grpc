@@ -39,31 +39,17 @@ func main() {
 	if err != nil {
 		panic(err)
 	}
-	// Allocate a buffer with `chunkSize` as the capacity
-	// and length (making a 0 array of the size of `chunkSize`)
 	buf := make([]byte, size)
-	//writing := true
 	for {
 		n, err := file.Read(buf)
 		if err != nil {
 			if err == io.EOF {
-				//md5sum := md5.Sum(blob)
-				//fmt.Printf("%d bytes uploaded; checksum=%s", fileSize, hex.EncodeToString(checksum))
-				//return
 				goto END
 			}
 			panic(err)
 		}
 
-		// ... if `eof` --> `writing=false`...
-
 		uploader.Send(&upload.Packet{
-			// because we might've read less than
-			// `chunkSize` we want to only send up to
-			// `n` (amount of bytes read).
-			// note: slicing (`:n`) won't copy the
-			// underlying data, so this as fast as taking
-			// a "pointer" to the underlying storage.
 			Data: buf[:n],
 		})
 	}
@@ -71,26 +57,6 @@ END:
 	result, err := uploader.CloseAndRecv()
 	fmt.Printf("uploaded=%d, checksum=%s\n", fileSize, hex.EncodeToString(checksum))
 	fmt.Printf("verified=%d, checksum=%s\n", result.Size, result.Checksum)
-
-	//if err != nil {
-	//	panic(err)
-	//}
-	//
-	//var blob []byte
-	//for {
-	//	packet, err := streamer.Recv()
-	//	if err != nil {
-	//		if err == io.EOF {
-	//			md5sum := md5.Sum(blob)
-	//			fmt.Printf("%d bytes downloaded; checksum=%s", len(blob), hex.EncodeToString(md5sum[:]))
-	//			return
-	//		}
-	//
-	//		panic(err)
-	//	}
-	//
-	//	blob = append(blob, packet.Data...)
-	//}
 }
 
 func createTempFile(size int64) (string, []byte, error) {
