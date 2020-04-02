@@ -17,19 +17,19 @@ func main() {
 	}
 
 	gRpcServer := grpc.NewServer()
-	single_and_single.RegisterGreeterServer(gRpcServer, &server{})
+	hello.RegisterGreeterServer(gRpcServer, &server{})
 	if err := gRpcServer.Serve(ln); err != nil {
 		panic(err)
 	}
 }
 
 type server struct {
-	single_and_single.UnimplementedGreeterServer
+	hello.UnimplementedGreeterServer
 }
 
-func (s *server) SayHello(ctx context.Context, in *single_and_single.HelloRequest) (*single_and_single.HelloResponse, error) {
+func (s *server) SayHello(ctx context.Context, in *hello.HelloRequest) (*hello.HelloResponse, error) {
 	msg := strings.TrimSpace(in.Message)
-	return &single_and_single.HelloResponse{
+	return &hello.HelloResponse{
 		Message: fmt.Sprintf("%s; count: %d", msg, len(msg)),
 	}, nil
 }

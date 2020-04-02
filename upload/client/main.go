@@ -17,7 +17,7 @@ func main() {
 	}
 	defer conn.Close()
 
-	client := single_and_single.NewGreeterClient(conn)
+	client := hello.NewGreeterClient(conn)
 	// ctx, cancel := context.WithTimeout(context.Background(), time.Second)
 	ctx := context.Background()
 
@@ -25,7 +25,7 @@ func main() {
 		reader := bufio.NewReader(os.Stdin)
 		fmt.Print("Request: ")
 		text, _ := reader.ReadString('\n')
-		res, err := client.SayHello(ctx, &single_and_single.HelloRequest{Message: text})
+		res, err := client.SayHello(ctx, &hello.HelloRequest{Message: text})
 		if err != nil {
 			panic(err)
 		}

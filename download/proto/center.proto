@@ -1,0 +1,14 @@
+syntax = "proto3";
+
+package download;
+
+import "google/protobuf/empty.proto";
+
+service DataCenter {
+    rpc Download (google.protobuf.Empty) returns (stream Packet) {
+    }
+}
+
+message Packet {
+    bytes data = 1;
+}

@@ -1,4 +1,4 @@
-# Single request & Single response (Unary RPC)
+# Single request & Stream response (Server streaming RPC)
 
 Generate code
 

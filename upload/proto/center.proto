@@ -1,9 +1,9 @@
 syntax = "proto3";
 
-package single_and_stream;
+package single_and_single;
 
-service Greeter {
-  rpc SayHello (HelloRequest) returns (stream HelloResponse) {}
+service DataCenter {
+  rpc Upload (stream HelloRequest) returns (HelloResponse) {}
 }
 
 message HelloRequest {
