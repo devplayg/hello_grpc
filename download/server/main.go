@@ -36,7 +36,6 @@ func main() {
 func generateData(size int) ([]byte, []byte) {
 	data := make([]byte, size)
 	rand.Read(data)
-
 	md5sum := md5.Sum(data)
 	return data, md5sum[:]
 
