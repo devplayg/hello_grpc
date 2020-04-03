@@ -5,7 +5,7 @@ hello_grpc
 
 | Method  | Request  | Response  |  Example
 |---|---|---|---|
-| `Unary`   | <span style="color:steelblue;">Single</span>  |  Single | Greeting|
+| `Unary`   | <span style="color:STEELBLUE;">Single</span>  |  Single | Greeting|
 |  `Server streaming`  | Single  | Stream  | Downloading|
 | `Client streaming`   | Stream  | Single  | Uploading|
 | `Bidirectional streaming`   | Stream  | Stream  | Shouting each other|
