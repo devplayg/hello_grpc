@@ -3,12 +3,15 @@ hello_grpc
 
 [gRPC lets you define four kinds of service method](https://grpc.io/docs/guides/concepts/)
 
-| Method  | Request  | Response  |  Example
-|---|---|---|---|
-| `Unary`   | <span style="color:STEELBLUE;">Single</span>  |  Single | Greeting|
+|Method  | Request  | Response  |  Example
+|:---|:---| :---|:---|
+| `Unary`   | Single |  Single | Greeting|
 |  `Server streaming`  | Single  | Stream  | Downloading|
 | `Client streaming`   | Stream  | Single  | Uploading|
 | `Bidirectional streaming`   | Stream  | Stream  | Shouting each other|
+
+
+
 
 #### 1. Single request / Single response ``
 
