@@ -8,10 +8,10 @@ https://grpc.io/docs/guides/concepts/
 
 |Method  | Request  | Response  |  Example
 |:---|:---|:---|:---|
-| `Unary`   | Single |  Single | Greeting|
-|  `Server streaming`  | Single  | Stream  | Downloading|
-| `Client streaming`   | Stream  | Single  | Uploading|
-| `Bidirectional streaming`   | Stream  | Stream  | Shouting each other|
+| `Unary`| Single |  Single | Greeting|
+| `Server streaming` | Single  | Stream  | Downloading|
+| `Client streaming` | Stream  | Single  | Uploading|
+| `Bidirectional streaming` | Stream | Stream  | Shouting each other|
 
 ![4 kinds of service method](4-kinds-of-service-method.png)
 
