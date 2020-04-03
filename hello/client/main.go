@@ -10,17 +10,16 @@ import (
 var addr = "localhost:50051"
 
 func main() {
-	conn, err := grpc.Dial(addr, grpc.WithInsecure(), grpc.WithBlock())
+	conn, err := grpc.Dial(addr, grpc.WithInsecure())
 	if err != nil {
 		panic(err)
 	}
 	defer conn.Close()
 
 	client := hello.NewDataCenterClient(conn)
-	request := &hello.HelloRequest{Name: "devplayg"}
-	res, err := client.SayHello(context.Background(), request)
+	res, err := client.SayHello(context.Background(), &hello.HelloRequest{Name: "gopher"})
 	if err != nil {
 		panic(err)
 	}
-	fmt.Println(res.Message)
+	fmt.Println("recv: " + res.Message)
 }
