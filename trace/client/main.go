@@ -5,11 +5,14 @@ import (
 	"crypto/md5"
 	"encoding/hex"
 	"fmt"
-	"github.com/davecgh/go-spew/spew"
 	"github.com/devplayg/hello_grpc/trace/proto"
 	"github.com/golang/protobuf/ptypes/empty"
 	"google.golang.org/grpc"
 	"io"
+	"io/ioutil"
+	"math/rand"
+	"os"
+	"time"
 )
 
 const (
@@ -19,7 +22,6 @@ const (
 )
 
 func main() {
-
 	// Connect to gRPC server
 	conn, err := grpc.Dial(addr, grpc.WithInsecure())
 	if err != nil {
@@ -27,53 +29,36 @@ func main() {
 	}
 	defer conn.Close()
 
+	// Create random file to upload
+	path, err := createTempFile(fileSize)
+	if err != nil {
+		panic(err)
+	}
+
+	// Run
 	client := trace.NewDataCenterClient(conn)
-	go traceDownload(client)
-	go traceUpload(client)
+	for i := 0; i < 20; i++ {
+		go traceDownload(client)
+		go traceUpload(client, path)
+	}
 
 	fmt.Scanln()
-
-	//// Create client
-	//dataCenterClient := upload.NewDataCenterClient(conn)
-
-	// Get upload client
-	//uploadClient, err := dataCenterClient.Upload(context.Background())
-	//
-	//// Create temp file
-	//file, err := createTempFile(fileSize)
-	//if err != nil {
-	//	panic(err)
-	//}
-	//defer func() {
-	//	file.Close()
-	//	os.Remove(file.Name())
-	//}()
-	//
-	//// Upload file
-	//if err := uploadFile(uploadClient, file); err != nil {
-	//	panic(err)
-	//}
-	//
-	//// Receive response
-	//_, err = uploadClient.CloseAndRecv()
-	//if err != nil {
-	//	panic(err)
-	//}
 }
 
 func traceDownload(client trace.DataCenterClient) {
-	streamer, err := client.Download(context.Background(), &empty.Empty{})
+	started := time.Now()
+	downloader, err := client.Download(context.Background(), &empty.Empty{})
 	if err != nil {
 		panic(err)
 	}
 
 	var data []byte
 	for {
-		packet, err := streamer.Recv()
+		packet, err := downloader.Recv()
 		if err != nil {
 			if err == io.EOF {
 				checksum := md5.Sum(data)
-				fmt.Printf("checksum: %s\n", hex.EncodeToString(checksum[:]))
+				fmt.Printf("downloaded: %d, checksum: %s, time: %3.1f\n", len(data), hex.EncodeToString(checksum[:]), time.Since(started).Seconds())
 				return
 			}
 
@@ -82,44 +67,65 @@ func traceDownload(client trace.DataCenterClient) {
 
 		data = append(data, packet.Data...)
 	}
+}
+
+func traceUpload(client trace.DataCenterClient, path string) {
+	started := time.Now()
+	uploader, err := client.Upload(context.Background())
+	if err != nil {
+		panic(err)
+	}
+
+	fi, err := os.Stat(path)
+	if err != nil {
+		panic(err)
+	}
+	fileSize := fi.Size()
+
+	file, err := os.OpenFile(path, os.O_RDONLY, 0644)
+	if err != nil {
+		panic(err)
+	}
+	defer file.Close()
+
+	buf := make([]byte, bufferSize)
+	file.Seek(0, 0)
+	for {
+		n, err := file.Read(buf)
+		if err != nil {
+			if err == io.EOF {
+				// Receive response
+				_, err = uploader.CloseAndRecv()
+				if err != nil {
+					panic(err)
+				}
+				fmt.Printf("uploaded; %d, time: %3.1f\n", fileSize, time.Since(started).Seconds())
+				return
+			}
+			panic(err)
+		}
+		if err := uploader.Send(&trace.Packet{
+			Data: buf[:n],
+		}); err != nil {
+			return
+		}
+	}
 
 }
 
-func traceUpload(conn trace.DataCenterClient) {
-	//fmt.Println("trace downloading")
-}
+// Create temp file and get checksum
+func createTempFile(size int64) (string, error) {
+	data := make([]byte, size)
+	rand.Read(data)
 
-//
-//// Upload file
-//func uploadFile(client upload.DataCenter_UploadClient, file *os.File) error {
-//	buf := make([]byte, bufferSize)
-//	file.Seek(0, 0)
-//	for {
-//		n, err := file.Read(buf)
-//		if err != nil {
-//			if err == io.EOF {
-//				return nil
-//			}
-//			return err
-//		}
-//		if err := client.Send(&upload.Packet{
-//			Data: buf[:n],
-//		}); err != nil {
-//			return err
-//		}
-//	}
-//}
-//
-//// Create temp file and get checksum
-//func createTempFile(size int64) (*os.File, error) {
-//	data := make([]byte, size)
-//	rand.Read(data)
-//
-//	f, err := ioutil.TempFile("", "")
-//	if err != nil {
-//		return nil, err
-//	}
-//	if _, err := f.Write(data); err != nil {
-//		return nil, err
-//	}
-//}
+	f, err := ioutil.TempFile("", "")
+	if err != nil {
+		return "", err
+	}
+	defer f.Close()
+	if _, err := f.Write(data); err != nil {
+		return "", err
+	}
+
+	return f.Name(), nil
+}

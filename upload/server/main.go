@@ -1,8 +1,6 @@
 package main
 
 import (
-	"crypto/md5"
-	"encoding/hex"
 	"fmt"
 	"github.com/devplayg/hello_grpc/upload/proto"
 	"google.golang.org/grpc"
@@ -31,7 +29,7 @@ func main() {
 	}
 }
 
-func receiveFile(srv upload.DataCenter_UploadServer) (string, uint64, []byte, error) {
+func receiveFile(srv upload.DataCenter_UploadServer) (string, uint64, error) {
 	// Create temp file
 	tempFile, err := ioutil.TempFile("", "")
 	if err != nil {
@@ -45,15 +43,9 @@ func receiveFile(srv upload.DataCenter_UploadServer) (string, uint64, []byte, er
 		packet, err := srv.Recv()
 		if err != nil {
 			if err == io.EOF {
-				// Calculate checksum
-				h := md5.New()
-				tempFile.Seek(0, 0)
-				if _, err := io.Copy(h, tempFile); err != nil {
-					return tempFile.Name(), 0, nil, err
-				}
-				return tempFile.Name(), receivedSize, h.Sum(nil), nil
+				return tempFile.Name(), receivedSize, nil
 			}
-			return "", 0, nil, err
+			return "", 0, err
 		}
 
 		if _, err := tempFile.Write(packet.Data); err != nil {
@@ -67,17 +59,16 @@ type server struct{}
 
 func (s *server) Upload(srv upload.DataCenter_UploadServer) error {
 	// Receive file
-	path, size, checksum, err := receiveFile(srv)
+	path, size, err := receiveFile(srv)
 	if err != nil {
 		return err
 	}
-	fmt.Printf("uploaded: %d; checksum=%s\n", size, hex.EncodeToString(checksum))
+	fmt.Printf("uploaded: %d\n", size)
 	defer os.Remove(path)
 
 	// Response
 	result := &upload.UploadResult{
-		Checksum: checksum,
-		Size:     size,
+		Size: size,
 	}
 	if err := srv.SendAndClose(result); err != nil {
 		return err

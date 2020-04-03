@@ -19,8 +19,8 @@ import (
 
 const (
 	addr      = "localhost:50051"
-	dataSize  = 512        // 256 MiB
-	chunkSize = 128 * 1024 // 128 MiB
+	dataSize  = 256 * 1024 * 1024 // 256 MiB
+	chunkSize = 128 * 1024        // 128 MiB
 )
 
 func main() {
@@ -44,10 +44,60 @@ func main() {
 
 	// Register and run service
 	gRpcServer := grpc.NewServer()
-	trace.RegisterDataCenterServer(gRpcServer, server(data))
+	trace.RegisterDataCenterServer(gRpcServer, &server{data})
 	if err := gRpcServer.Serve(ln); err != nil {
 		panic(err)
 	}
+}
+
+type server struct {
+	data []byte
+}
+
+func (s *server) Hello(ctx context.Context, in *trace.HelloRequest) (*trace.HelloResponse, error) {
+	return &trace.HelloResponse{
+		Message: "hello " + in.Message,
+	}, nil
+}
+
+func (s *server) Upload(srv trace.DataCenter_UploadServer) error {
+	// Receive file
+	path, size, checksum, err := receiveFile(srv)
+	if err != nil {
+		panic(err)
+	}
+	fmt.Printf("uploaded: %d; checksum=%s\n", size, hex.EncodeToString(checksum))
+	defer os.Remove(path)
+
+	// Response
+	result := &trace.UploadResult{
+		Checksum: checksum,
+		Size:     size,
+	}
+	if err := srv.SendAndClose(result); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (s *server) Download(_ *empty.Empty, srv trace.DataCenter_DownloadServer) error {
+	fmt.Printf("transfering..\n")
+	packet := &trace.Packet{}
+	dataLength := len(s.data)
+
+	for position := 0; position < dataLength; position += chunkSize {
+		if position+chunkSize > dataLength {
+			packet.Data = s.data[position:]
+		} else {
+			packet.Data = s.data[position : position+chunkSize]
+		}
+		if err := srv.Send(packet); err != nil {
+			return err
+		}
+	}
+
+	return nil
 }
 
 func receiveFile(srv trace.DataCenter_UploadServer) (string, uint64, []byte, error) {
@@ -80,50 +130,4 @@ func receiveFile(srv trace.DataCenter_UploadServer) (string, uint64, []byte, err
 		}
 		receivedSize += uint64(len(packet.Data))
 	}
-}
-
-type server []byte
-
-func (s *server) Hello(ctx context.Context, req *trace.HelloRequest) (*trace.HelloResponse, error) {
-	return nil, nil
-}
-
-func (s *server) Upload(srv trace.DataCenter_UploadServer) error {
-	// Receive file
-	path, size, checksum, err := receiveFile(srv)
-	if err != nil {
-		return err
-	}
-	fmt.Printf("uploaded: %d; checksum=%s\n", size, hex.EncodeToString(checksum))
-	defer os.Remove(path)
-
-	// Response
-	result := &trace.UploadResult{
-		Checksum: checksum,
-		Size:     size,
-	}
-	if err := srv.SendAndClose(result); err != nil {
-		return err
-	}
-
-	return nil
-}
-
-func (s server) Download(_ *empty.Empty, srv trace.DataCenter_DownloadServer) error {
-	fmt.Printf("transfering..\n")
-	packet := &trace.Packet{}
-	dataLength := len(s)
-
-	for position := 0; position < dataLength; position += chunkSize {
-		if position+chunkSize > dataLength {
-			packet.Data = s[position:]
-		} else {
-			packet.Data = s[position : position+chunkSize]
-		}
-		if err := srv.Send(packet); err != nil {
-			return err
-		}
-	}
-
-	return nil
 }

@@ -17,7 +17,6 @@ const (
 )
 
 func main() {
-
 	// Connect to gRPC server
 	conn, err := grpc.Dial(addr, grpc.WithInsecure())
 	if err != nil {
@@ -25,11 +24,14 @@ func main() {
 	}
 	defer conn.Close()
 
-	// Create client
-	dataCenterClient := upload.NewDataCenterClient(conn)
+	// Create service client
+	client := upload.NewDataCenterClient(conn)
 
 	// Get upload client
-	uploadClient, err := dataCenterClient.Upload(context.Background())
+	uploader, err := client.Upload(context.Background())
+	if err != nil {
+		panic(err)
+	}
 
 	// Create temp file
 	file, err := createTempFile(fileSize)
@@ -42,12 +44,12 @@ func main() {
 	}()
 
 	// Upload file
-	if err := uploadFile(uploadClient, file); err != nil {
+	if err := uploadFile(uploader, file); err != nil {
 		panic(err)
 	}
 
 	// Receive response
-	_, err = uploadClient.CloseAndRecv()
+	_, err = uploader.CloseAndRecv()
 	if err != nil {
 		panic(err)
 	}
@@ -65,9 +67,10 @@ func uploadFile(client upload.DataCenter_UploadClient, file *os.File) error {
 			}
 			return err
 		}
-		if err := client.Send(&upload.Packet{
+		packet := &upload.Packet{
 			Data: buf[:n],
-		}); err != nil {
+		}
+		if err := client.Send(packet); err != nil {
 			return err
 		}
 	}
@@ -85,4 +88,6 @@ func createTempFile(size int64) (*os.File, error) {
 	if _, err := f.Write(data); err != nil {
 		return nil, err
 	}
+
+	return f, nil
 }

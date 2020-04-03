@@ -1,14 +1,24 @@
-# hello_grpc
+hello_grpc
+---
 
-## Download protocol buffer
+[gRPC lets you define four kinds of service method](https://grpc.io/docs/guides/concepts/)
+
+#### 1. Single request & Single response (Unary RPC)
+
+`Unary RPC` When greeting
+
+#### 2. Single request & Stream response (Server streaming RPC)
+
+When downloading data
+
+#### 3. Stream request & Single response (Client streaming RPC)
+
+When uploading data
+
+#### 4. Stream request & Stream request (Bidirectional streaming RPC)
+
+When shouting each other
+
+
 
 https://github.com/protocolbuffers/protobuf/releases
-
-##### Single request & Single response (Unary RPC)
-
-##### Single request & Stream response (Server streaming RPC)
-
-##### Stream request & Single response (Client streaming RPC)
-
-##### Stream request & Stream request (Bidirectional streaming RPC)
-

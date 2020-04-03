@@ -12,6 +12,5 @@ message Packet {
 }
 
 message UploadResult {
-    bytes checksum = 1;
-    uint64 size = 2;
+    uint64 size = 1;
 }

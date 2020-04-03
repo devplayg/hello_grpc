@@ -18,14 +18,14 @@ func main() {
 	defer conn.Close()
 
 	client := download.NewDataCenterClient(conn)
-	streamer, err := client.Download(context.Background(), &empty.Empty{})
+	downloader, err := client.Download(context.Background(), &empty.Empty{})
 	if err != nil {
 		panic(err)
 	}
 
 	var data []byte
 	for {
-		packet, err := streamer.Recv()
+		packet, err := downloader.Recv()
 		if err != nil {
 			if err == io.EOF {
 				return
