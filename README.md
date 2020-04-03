@@ -3,7 +3,7 @@ hello_grpc
 
 [gRPC lets you define four kinds of service method](https://grpc.io/docs/guides/concepts/)
 
-#### 1. Single request & Single response (Unary RPC)
+#### 1. Single request & Single response `Unary RPC`
 
 `Unary RPC` When greeting
 
