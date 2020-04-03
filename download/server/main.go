@@ -1,8 +1,6 @@
 package main
 
 import (
-	"crypto/md5"
-	"encoding/hex"
 	"fmt"
 	"github.com/devplayg/hello_grpc/download/proto"
 	"github.com/golang/protobuf/ptypes/empty"
@@ -11,9 +9,10 @@ import (
 	"net"
 )
 
-var (
-	addr = ":50051"
-	size = 10 * 1024
+const (
+	addr      = "localhost:50051"
+	dataSize  = 256 * 1024 * 1024 // 256 MiB
+	chunkSize = 128 * 1024        // 128 MiB
 )
 
 func main() {
@@ -21,40 +20,36 @@ func main() {
 	if err != nil {
 		panic(err)
 	}
+	fmt.Printf("listening on %s\n", addr)
 
-	g := grpc.NewServer()
-	data, md5sum := generateData(256 * 1024 * 1024)
-	fmt.Printf("listen on %s\n", addr)
-	fmt.Printf("size=%d, md5:%s\n", len(data), hex.EncodeToString(md5sum))
+	// Generate random data
+	data := make([]byte, dataSize)
+	rand.Read(data)
 
-	download.RegisterDataCenterServer(g, server(data))
-	if err := g.Serve(ln); err != nil {
+	// Register and run service
+	gRpcServer := grpc.NewServer()
+	download.RegisterDataCenterServer(gRpcServer, server(data))
+	if err := gRpcServer.Serve(ln); err != nil {
 		panic(err)
 	}
-}
-
-func generateData(size int) ([]byte, []byte) {
-	data := make([]byte, size)
-	rand.Read(data)
-	md5sum := md5.Sum(data)
-	return data, md5sum[:]
-
 }
 
 type server []byte
 
 func (s server) Download(_ *empty.Empty, srv download.DataCenter_DownloadServer) error {
 	packet := &download.Packet{}
+	dataLength := len(s)
 
-	for position := 0; position < len(s); position += size {
-		if position+size > len(s) {
+	for position := 0; position < dataLength; position += chunkSize {
+		if position+chunkSize > dataLength {
 			packet.Data = s[position:]
 		} else {
-			packet.Data = s[position : position+size]
+			packet.Data = s[position : position+chunkSize]
 		}
 		if err := srv.Send(packet); err != nil {
 			return err
 		}
 	}
+
 	return nil
 }

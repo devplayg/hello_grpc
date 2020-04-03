@@ -2,9 +2,6 @@ package main
 
 import (
 	"context"
-	"crypto/md5"
-	"encoding/hex"
-	"fmt"
 	"github.com/devplayg/hello_grpc/download/proto"
 	"github.com/golang/protobuf/ptypes/empty"
 	"google.golang.org/grpc"
@@ -14,7 +11,7 @@ import (
 var addr = "localhost:50051"
 
 func main() {
-	conn, err := grpc.Dial(addr, grpc.WithInsecure(), grpc.WithBlock())
+	conn, err := grpc.Dial(addr, grpc.WithInsecure())
 	if err != nil {
 		panic(err)
 	}
@@ -26,19 +23,17 @@ func main() {
 		panic(err)
 	}
 
-	var blob []byte
+	var data []byte
 	for {
 		packet, err := streamer.Recv()
 		if err != nil {
 			if err == io.EOF {
-				md5sum := md5.Sum(blob)
-				fmt.Printf("%d bytes downloaded; checksum=%s", len(blob), hex.EncodeToString(md5sum[:]))
 				return
 			}
 
 			panic(err)
 		}
 
-		blob = append(blob, packet.Data...)
+		data = append(data, packet.Data...)
 	}
 }

@@ -7,7 +7,7 @@ import (
 	"google.golang.org/grpc"
 )
 
-var addr = "localhost:50051"
+const addr = "localhost:50051"
 
 func main() {
 	conn, err := grpc.Dial(addr, grpc.WithInsecure())

@@ -8,14 +8,12 @@ import (
 	"google.golang.org/grpc"
 	"io"
 	"io/ioutil"
-	"log"
 	"net"
 	"os"
 )
 
-var (
-	addr = ":50051"
-	size = 10 * 1024
+const (
+	addr = "localhost:50051"
 )
 
 func main() {
@@ -23,71 +21,66 @@ func main() {
 	if err != nil {
 		panic(err)
 	}
-
-	g := grpc.NewServer()
 	fmt.Printf("listen on %s\n", addr)
 
-	upload.RegisterDataCenterServer(g, &server{})
-	if err := g.Serve(ln); err != nil {
+	// Register and run service
+	gRpcServer := grpc.NewServer()
+	upload.RegisterDataCenterServer(gRpcServer, &server{})
+	if err := gRpcServer.Serve(ln); err != nil {
 		panic(err)
 	}
 }
 
-type server struct {
-	upload.UnimplementedDataCenterServer
-}
-
-func (s *server) Upload(srv upload.DataCenter_UploadServer) error {
-	tempFile, err := ioutil.TempFile("c:/temp", "")
+func receiveFile(srv upload.DataCenter_UploadServer) (string, uint64, []byte, error) {
+	// Create temp file
+	tempFile, err := ioutil.TempFile("", "")
 	if err != nil {
 		panic(err)
 	}
-	tempFile.Close()
-	defer os.Remove(tempFile.Name())
+	defer tempFile.Close()
 
-	file, err := os.OpenFile(tempFile.Name(), os.O_CREATE|os.O_TRUNC, 0644)
-	if err != nil {
-		panic(err)
-	}
-	defer file.Close()
-
+	// Receive
+	var receivedSize uint64
 	for {
 		packet, err := srv.Recv()
 		if err != nil {
 			if err == io.EOF {
-				goto END
+				// Calculate checksum
+				h := md5.New()
+				tempFile.Seek(0, 0)
+				if _, err := io.Copy(h, tempFile); err != nil {
+					return tempFile.Name(), 0, nil, err
+				}
+				return tempFile.Name(), receivedSize, h.Sum(nil), nil
 			}
-			panic(err)
+			return "", 0, nil, err
 		}
 
-		if _, err := file.Write(packet.Data); err != nil {
+		if _, err := tempFile.Write(packet.Data); err != nil {
 			panic(err)
 		}
+		receivedSize += uint64(len(packet.Data))
 	}
-END:
-	file.Close()
+}
 
-	fff, err := os.Open(file.Name())
-	if err != nil {
-		panic(err)
-	}
-	h := md5.New()
-	if _, err := io.Copy(h, fff); err != nil {
-		log.Fatal(err)
-	}
-	checksum := hex.EncodeToString(h.Sum(nil))
-	fff.Close()
+type server struct{}
 
-	ff, err := os.Stat(file.Name())
+func (s *server) Upload(srv upload.DataCenter_UploadServer) error {
+	// Receive file
+	path, size, checksum, err := receiveFile(srv)
 	if err != nil {
-		panic(err)
+		return err
 	}
-	fmt.Printf("%d bytes uploaded; checksum=%s\n", ff.Size(), checksum)
-	if err := srv.SendAndClose(&upload.UploadResult{
+	fmt.Printf("uploaded: %d; checksum=%s\n", size, hex.EncodeToString(checksum))
+	defer os.Remove(path)
+
+	// Response
+	result := &upload.UploadResult{
 		Checksum: checksum,
-		Size:     ff.Size(),
-	}); err != nil {
-		panic(err)
+		Size:     size,
+	}
+	if err := srv.SendAndClose(result); err != nil {
+		return err
 	}
 
 	return nil

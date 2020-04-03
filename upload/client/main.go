@@ -2,10 +2,7 @@ package main
 
 import (
 	"context"
-	"crypto/md5"
 	"crypto/rand"
-	"encoding/hex"
-	"fmt"
 	"github.com/devplayg/hello_grpc/upload/proto"
 	"google.golang.org/grpc"
 	"io"
@@ -13,64 +10,79 @@ import (
 	"os"
 )
 
-var (
-	addr = "localhost:50051"
-	size = 1024
+const (
+	addr       = "localhost:50051"
+	fileSize   = 256 * 1024 * 1024 // 256 MiB
+	bufferSize = 128 * 1024        // 128 KiB
 )
 
 func main() {
-	fileSize := int64(100 * 1024 * 1024)
-	path, checksum, err := createTempFile(fileSize)
-	if err != nil {
-		panic(err)
-	}
-	defer os.Remove(path)
 
-	conn, err := grpc.Dial(addr, grpc.WithInsecure(), grpc.WithBlock())
+	// Connect to gRPC server
+	conn, err := grpc.Dial(addr, grpc.WithInsecure())
 	if err != nil {
 		panic(err)
 	}
 	defer conn.Close()
 
-	client := upload.NewDataCenterClient(conn)
-	uploader, err := client.Upload(context.Background())
+	// Create client
+	dataCenterClient := upload.NewDataCenterClient(conn)
 
-	file, err := os.Open(path)
+	// Get upload client
+	uploadClient, err := dataCenterClient.Upload(context.Background())
+
+	// Create temp file
+	file, err := createTempFile(fileSize)
 	if err != nil {
 		panic(err)
 	}
-	buf := make([]byte, size)
+	defer func() {
+		file.Close()
+		os.Remove(file.Name())
+	}()
+
+	// Upload file
+	if err := uploadFile(uploadClient, file); err != nil {
+		panic(err)
+	}
+
+	// Receive response
+	_, err = uploadClient.CloseAndRecv()
+	if err != nil {
+		panic(err)
+	}
+}
+
+// Upload file
+func uploadFile(client upload.DataCenter_UploadClient, file *os.File) error {
+	buf := make([]byte, bufferSize)
+	file.Seek(0, 0)
 	for {
 		n, err := file.Read(buf)
 		if err != nil {
 			if err == io.EOF {
-				goto END
+				return nil
 			}
-			panic(err)
+			return err
 		}
-
-		uploader.Send(&upload.Packet{
+		if err := client.Send(&upload.Packet{
 			Data: buf[:n],
-		})
+		}); err != nil {
+			return err
+		}
 	}
-END:
-	result, err := uploader.CloseAndRecv()
-	fmt.Printf("uploaded=%d, checksum=%s\n", fileSize, hex.EncodeToString(checksum))
-	fmt.Printf("verified=%d, checksum=%s\n", result.Size, result.Checksum)
 }
 
-func createTempFile(size int64) (string, []byte, error) {
+// Create temp file and get checksum
+func createTempFile(size int64) (*os.File, error) {
 	data := make([]byte, size)
 	rand.Read(data)
 
 	f, err := ioutil.TempFile("", "")
 	if err != nil {
-		return "", nil, err
+		return nil, err
 	}
 	if _, err := f.Write(data); err != nil {
-		return "", nil, err
+		return nil, err
 	}
-
-	checksum := md5.Sum(data)
-	return f.Name(), checksum[:], nil
 }

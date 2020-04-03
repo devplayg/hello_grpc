@@ -8,7 +8,7 @@ import (
 	"net"
 )
 
-var addr = ":50051"
+const addr = "localhost:50051"
 
 func main() {
 	ln, err := net.Listen("tcp", addr)
