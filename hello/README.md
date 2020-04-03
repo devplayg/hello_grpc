@@ -1,4 +1,6 @@
-# Single request & Single response (Unary RPC)
+## Unary RPC 
+
+`Single request / Single response`
 
 Generate code
 

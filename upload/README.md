@@ -1,4 +1,6 @@
-# Single request & Stream response (Server streaming RPC)
+## Client streaming RPC
+
+`Stream request / Single response` 
 
 Generate code
 
