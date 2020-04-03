@@ -13,6 +13,8 @@ https://grpc.io/docs/guides/concepts/
 | `Client streaming`   | Stream  | Single  | Uploading|
 | `Bidirectional streaming`   | Stream  | Stream  | Shouting each other|
 
+![4 kinds of service method](4-kinds-of-service-method.png)
+
 
 #### 1. Single request / Single response
 
