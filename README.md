@@ -1,5 +1,6 @@
-hello_grpc
----
+# hello_grpc
+
+A high-performance, open source universal RPC framework
 
 gRPC lets you define four kinds of service method
 
@@ -20,13 +21,19 @@ https://grpc.io/docs/guides/concepts/
 
 `Unary RPC` When greeting
 
+[Example](./hello)
+
 #### 2. Single request / Stream response
 
 `Server streaming` When downloading data
 
+[Example](./download)
+
 #### 3. Stream request / Single response
 
 `Client streaming` When uploading data
+
+[Example](./upload)
 
 #### 4. Stream request / Stream request
 
