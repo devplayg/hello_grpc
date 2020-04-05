@@ -12,14 +12,13 @@ import (
 const (
 	addr      = "localhost:50051"
 	dataSize  = 256 * 1024 * 1024 // 256 MiB
-	chunkSize = 64 * 1024         // 128 KiB
+	chunkSize = 32 * 1024         // 32 KiB
 )
 
 var data []byte
 
 func init() {
-	// Generate random data
-	data := make([]byte, dataSize)
+	data = make([]byte, dataSize)
 	rand.Read(data)
 }
 
@@ -37,6 +36,7 @@ func main() {
 	download.RegisterDataCenterServer(gRpcServer, server(data))
 
 	// Run
+	fmt.Printf("data size: %d\n", len(data))
 	if err := gRpcServer.Serve(ln); err != nil {
 		panic(err)
 	}

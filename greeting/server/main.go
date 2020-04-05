@@ -15,6 +15,7 @@ func main() {
 	if err != nil {
 		panic(err)
 	}
+	fmt.Printf("listening on %s\n", addr)
 
 	// Create gRPC server
 	gRpcServer := grpc.NewServer()

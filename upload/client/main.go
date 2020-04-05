@@ -3,6 +3,7 @@ package main
 import (
 	"context"
 	"crypto/rand"
+	"fmt"
 	"github.com/devplayg/hello_grpc/upload/proto"
 	"google.golang.org/grpc"
 	"io"
@@ -11,27 +12,34 @@ import (
 )
 
 const (
-	addr       = "localhost:50051"
-	fileSize   = 256 * 1024 * 1024 // 256 MiB
-	bufferSize = 128 * 1024        // 128 KiB
+	addr      = "localhost:50051"
+	fileSize  = 256 * 1024 * 1024 // 256 MiB
+	chunkSize = 32 * 1024         // 32 KiB
 )
 
 func main() {
-	// Connect to gRPC server
+	// Create connection
 	conn, err := grpc.Dial(addr, grpc.WithInsecure())
 	if err != nil {
 		panic(err)
 	}
 	defer conn.Close()
 
-	// Create service client
+	// Create client API for service
 	client := upload.NewDataCenterClient(conn)
 
-	// Get upload client
+	// gRPC remote procedure call
 	uploader, err := client.Upload(context.Background())
 	if err != nil {
 		panic(err)
 	}
+	defer func() {
+		response, err := uploader.CloseAndRecv()
+		if err != nil {
+			panic(err)
+		}
+		fmt.Printf("\nresponse: %d\n", response.Size)
+	}()
 
 	// Create temp file
 	file, err := createTempFile(fileSize)
@@ -43,36 +51,26 @@ func main() {
 		os.Remove(file.Name())
 	}()
 
-	// Upload file
-	if err := uploadFile(uploader, file); err != nil {
-		panic(err)
-	}
-
-	// Receive response
-	_, err = uploader.CloseAndRecv()
-	if err != nil {
-		panic(err)
-	}
-}
-
-// Upload file
-func uploadFile(client upload.DataCenter_UploadClient, file *os.File) error {
-	buf := make([]byte, bufferSize)
+	// Send file to server
+	var sent uint64
+	buf := make([]byte, chunkSize)
 	file.Seek(0, 0)
 	for {
 		n, err := file.Read(buf)
 		if err != nil {
 			if err == io.EOF {
-				return nil
+				return
 			}
-			return err
+			panic(err)
 		}
 		packet := &upload.Packet{
 			Data: buf[:n],
 		}
-		if err := client.Send(packet); err != nil {
-			return err
+		if err := uploader.Send(packet); err != nil {
+			panic(err)
 		}
+		sent += uint64(len(packet.Data))
+		fmt.Printf("uploaded: %d\r", sent)
 	}
 }
 

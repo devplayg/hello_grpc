@@ -17,10 +17,10 @@ func main() {
 	}
 	defer conn.Close()
 
-	// Create API for service
+	// Create client API for service
 	clientApi := greeting.NewGreetingClient(conn)
 
-	// Call
+	// gRPC remote procedure call
 	res, err := clientApi.SayHello(context.Background(), &greeting.HelloRequest{Name: "gopher"})
 	if err != nil {
 		panic(err)

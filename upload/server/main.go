@@ -21,31 +21,45 @@ func main() {
 	}
 	fmt.Printf("listen on %s\n", addr)
 
-	// Register and run service
+	// Create gRPC server
 	gRpcServer := grpc.NewServer()
+
+	// Register server to gRPC server
 	upload.RegisterDataCenterServer(gRpcServer, &server{})
+
+	// Run
 	if err := gRpcServer.Serve(ln); err != nil {
 		panic(err)
 	}
 }
 
-func receiveFile(srv upload.DataCenter_UploadServer) (string, uint64, error) {
+type server struct{}
+
+func (s *server) Upload(srv upload.DataCenter_UploadServer) error {
+	var receivedSize uint64
+
 	// Create temp file
 	tempFile, err := ioutil.TempFile("", "")
 	if err != nil {
 		panic(err)
 	}
-	defer tempFile.Close()
+	defer func() {
+		tempFile.Close()
+		os.Remove(tempFile.Name()) // Response
+		srv.SendAndClose(&upload.UploadResult{
+			Size: receivedSize,
+		})
+		fmt.Printf("uploaded: %d\n", receivedSize)
+	}()
 
 	// Receive
-	var receivedSize uint64
 	for {
 		packet, err := srv.Recv()
 		if err != nil {
 			if err == io.EOF {
-				return tempFile.Name(), receivedSize, nil
+				return nil
 			}
-			return "", 0, err
+			return err
 		}
 
 		if _, err := tempFile.Write(packet.Data); err != nil {
@@ -53,26 +67,32 @@ func receiveFile(srv upload.DataCenter_UploadServer) (string, uint64, error) {
 		}
 		receivedSize += uint64(len(packet.Data))
 	}
-}
-
-type server struct{}
-
-func (s *server) Upload(srv upload.DataCenter_UploadServer) error {
-	// Receive file
-	path, size, err := receiveFile(srv)
-	if err != nil {
-		return err
-	}
-	fmt.Printf("uploaded: %d\n", size)
-	defer os.Remove(path)
-
-	// Response
-	result := &upload.UploadResult{
-		Size: size,
-	}
-	if err := srv.SendAndClose(result); err != nil {
-		return err
-	}
 
 	return nil
 }
+
+// func receiveFile(srv upload.DataCenter_UploadServer) (string, uint64, error) {
+// 	// Create temp file
+// 	tempFile, err := ioutil.TempFile("", "")
+// 	if err != nil {
+// 		panic(err)
+// 	}
+// 	defer tempFile.Close()
+//
+// 	// Receive
+// 	var receivedSize uint64
+// 	for {
+// 		packet, err := srv.Recv()
+// 		if err != nil {
+// 			if err == io.EOF {
+// 				return tempFile.Name(), receivedSize, nil
+// 			}
+// 			return "", 0, err
+// 		}
+//
+// 		if _, err := tempFile.Write(packet.Data); err != nil {
+// 			panic(err)
+// 		}
+// 		receivedSize += uint64(len(packet.Data))
+// 	}
+// }
