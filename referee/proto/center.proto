@@ -1,0 +1,13 @@
+syntax = "proto3";
+
+package referee;
+
+service Referee {
+  rpc ShoutOut (stream Judgment) returns (stream Judgment) {
+  }
+}
+
+message Judgment  {
+  string team = 1;
+  float score = 2;
+}
