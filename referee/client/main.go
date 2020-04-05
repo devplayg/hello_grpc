@@ -49,7 +49,7 @@ func main() {
 		Score: 101,
 	}
 	for {
-		if err := ref.Send(judgment); err != nil {
+		if err := gRpcClient.Send(judgment); err != nil {
 			drainError(err)
 			time.Sleep(time.Second)
 		}

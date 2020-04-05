@@ -1,6 +1,7 @@
-## Unary RPC 
+## Simple RPC (Unary RPC)
 
-`Single request / Single response`
+- Client: Single request
+- Server: Single response 
 
 Generate code
 

@@ -1,8 +1,8 @@
 syntax = "proto3";
 
-package hello;
+package greeting;
 
-service DataCenter {
+service Greeting {
   rpc SayHello (HelloRequest) returns (HelloResponse) {}
 }
 

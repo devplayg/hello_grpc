@@ -22,7 +22,7 @@ https://grpc.io/docs/guides/concepts/
 - Client: Single request
 - Server: Single response
 
-[Example](./hello)
+[Example](greeting)
 
 
 #### 2. Server-side streaming RPC
@@ -45,6 +45,8 @@ https://grpc.io/docs/guides/concepts/
 
 - Client: Stream request
 - Server: Stream request
+
+[Example](./referee)
 
 
 ## Download Protocol Buffers

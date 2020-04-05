@@ -11,14 +11,18 @@ import (
 var addr = "localhost:50051"
 
 func main() {
+	// Create connection
 	conn, err := grpc.Dial(addr, grpc.WithInsecure())
 	if err != nil {
 		panic(err)
 	}
 	defer conn.Close()
 
-	client := download.NewDataCenterClient(conn)
-	downloader, err := client.Download(context.Background(), &empty.Empty{})
+	// Create API for service
+	clientApi := download.NewDataCenterClient(conn)
+
+	// Call
+	downloader, err := clientApi.Download(context.Background(), &empty.Empty{})
 	if err != nil {
 		panic(err)
 	}

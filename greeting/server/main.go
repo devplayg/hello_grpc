@@ -3,7 +3,7 @@ package main
 import (
 	"context"
 	"fmt"
-	"github.com/devplayg/hello_grpc/hello/proto"
+	"github.com/devplayg/hello_grpc/greeting/proto"
 	"google.golang.org/grpc"
 	"net"
 )
@@ -16,8 +16,13 @@ func main() {
 		panic(err)
 	}
 
+	// Create gRPC server
 	gRpcServer := grpc.NewServer()
-	hello.RegisterDataCenterServer(gRpcServer, &server{})
+
+	// Register server to gRPC server
+	greeting.RegisterGreetingServer(gRpcServer, &server{})
+
+	// Run
 	if err := gRpcServer.Serve(ln); err != nil {
 		panic(err)
 	}
@@ -25,9 +30,9 @@ func main() {
 
 type server struct{}
 
-func (s *server) SayHello(ctx context.Context, in *hello.HelloRequest) (*hello.HelloResponse, error) {
+func (s *server) SayHello(ctx context.Context, in *greeting.HelloRequest) (*greeting.HelloResponse, error) {
 	fmt.Printf("greeted by %s\n", in.Name)
-	return &hello.HelloResponse{
+	return &greeting.HelloResponse{
 		Message: "Hello " + in.Name,
 	}, nil
 }
