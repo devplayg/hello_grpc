@@ -29,12 +29,12 @@ func main() {
 	client := upload.NewDataCenterClient(conn)
 
 	// gRPC remote procedure call
-	uploader, err := client.Upload(context.Background())
+	uploadStream, err := client.Upload(context.Background())
 	if err != nil {
 		panic(err)
 	}
 	defer func() {
-		response, err := uploader.CloseAndRecv()
+		response, err := uploadStream.CloseAndRecv()
 		if err != nil {
 			panic(err)
 		}
@@ -57,14 +57,15 @@ func main() {
 	file.Seek(0, 0)
 	for {
 		n, err := file.Read(buf)
+		if err == io.EOF {
+			break
+		}
 		if err != nil {
-			if err == io.EOF {
-				break
-			}
 			panic(err)
 		}
+
 		packet := &upload.Packet{Data: buf[:n]}
-		if err := uploader.Send(packet); err != nil {
+		if err := uploadStream.Send(packet); err != nil {
 			panic(err)
 		}
 		sent += uint64(len(packet.Data))

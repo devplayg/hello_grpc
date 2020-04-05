@@ -32,13 +32,13 @@ func main() {
 	var downloaded int64
 	for {
 		packet, err := downloadStream.Recv()
+		if err == io.EOF {
+			return
+		}
 		if err != nil {
-			if err == io.EOF {
-				return
-			}
-
 			panic(err)
 		}
+
 		data = append(data, packet.Data...)
 		downloaded += int64(len(packet.Data))
 		fmt.Printf("downloaded %-10d\r", downloaded)

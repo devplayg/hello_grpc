@@ -1,10 +1,12 @@
 package main
 
 import (
+	"context"
 	"fmt"
 	"github.com/devplayg/hello_grpc/referee/proto"
 	"google.golang.org/grpc"
 	"io"
+	"math/rand"
 	"net"
 	"time"
 )
@@ -20,9 +22,13 @@ func main() {
 	}
 	fmt.Printf("listen on %s\n", addr)
 
-	// Register and run service
+	// Create gRPC server
 	gRpcServer := grpc.NewServer()
+
+	// Register server to gRPC server
 	referee.RegisterRefereeServer(gRpcServer, &server{})
+
+	// Run
 	if err := gRpcServer.Serve(ln); err != nil {
 		panic(err)
 	}
@@ -31,46 +37,46 @@ func main() {
 type server struct{}
 
 func (s *server) ShoutOut(srv referee.Referee_ShoutOutServer) error {
-	fmt.Println("connected")
+	// ctx := srv.Context()
+	done := make(chan bool)
 
 	// Receive stream
 	go func() {
 		for {
 			judgment, err := srv.Recv()
+			if err == io.EOF {
+				close(done)
+				return
+			}
 			if err != nil {
-				drainError(err)
-				time.Sleep(time.Second)
-				continue
+				panic(err)
 			}
 
-			fmt.Printf("[%s] %3.1f\n", judgment.Team, judgment.Score)
+			fmt.Printf("[%s] %3.1f\r", judgment.Team, judgment.Score)
 		}
-
 	}()
 
 	// Send stream
-	judgment := &referee.Judgment{
-		Team:  "S-Steam",
-		Score: 10,
-	}
-	for {
-		if err := srv.Send(judgment); err != nil {
-			if err != nil {
-				if err == io.EOF {
-					return nil
-				}
-				drainError(err)
-			}
-			time.Sleep(time.Second)
+	for i := 0; i < 10; i++ {
+		judgment := &referee.Judgment{
+			Team:  "Real Madrid CF",
+			Score: float32(rand.Intn(100)) / float32(rand.Intn(100)+1),
 		}
-		time.Sleep(time.Second)
+		if err := srv.Send(judgment); err != nil {
+			if err == io.EOF {
+				break
+			}
+			if err == context.Canceled {
+				fmt.Println("canceled")
+				break
+			}
+			if err != nil {
+				panic(err)
+			}
+		}
+		time.Sleep(100 * time.Millisecond)
 	}
 
+	<-done
 	return nil
-}
-
-func drainError(err error) {
-	if err != nil {
-		fmt.Printf("[error] %s\n", err.Error())
-	}
 }

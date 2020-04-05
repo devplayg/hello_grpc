@@ -5,6 +5,8 @@ import (
 	"fmt"
 	"github.com/devplayg/hello_grpc/referee/proto"
 	"google.golang.org/grpc"
+	"io"
+	"math/rand"
 	"time"
 )
 
@@ -13,53 +15,57 @@ const (
 )
 
 func main() {
-	// Connect to gRPC server
+	rand.Seed(time.Now().Unix())
+
+	// Create connection
 	conn, err := grpc.Dial(addr, grpc.WithInsecure())
 	if err != nil {
 		panic(err)
 	}
 	defer conn.Close()
 
-	// Create service client
+	// Create client API for service
 	client := referee.NewRefereeClient(conn)
 
-	// Get referee client
-	gRpcClient, err := client.ShoutOut(context.Background())
+	// gRPC remote procedure call
+	shoutingStream, err := client.ShoutOut(context.Background())
 	if err != nil {
 		panic(err)
 	}
 
+	// ctx := shoutingStream.Context()
+	done := make(chan bool)
+
 	// Receive stream
 	go func() {
 		for {
-			judgment, err := gRpcClient.Recv()
+			judgment, err := shoutingStream.Recv()
+			if err == io.EOF {
+				close(done)
+				return
+			}
 			if err != nil {
-				drainError(err)
-				time.Sleep(time.Second)
-				continue
+				panic(err)
 			}
 
-			fmt.Printf("[%s] %3.1f\n", judgment.Team, judgment.Score)
+			fmt.Printf("[%s] %3.1f\r", judgment.Team, judgment.Score)
 		}
 	}()
 
 	// Send stream
-	judgment := &referee.Judgment{
-		Team:  "C-Steam",
-		Score: 101,
-	}
-	for {
-		if err := gRpcClient.Send(judgment); err != nil {
-			drainError(err)
-			time.Sleep(time.Second)
+	for i := 0; i < 10; i++ {
+		judgment := &referee.Judgment{
+			Team:  "F.C. Barcelona",
+			Score: float32(rand.Intn(100)) / float32(rand.Intn(100)+1),
 		}
-		time.Sleep(time.Second)
+		if err := shoutingStream.Send(judgment); err != nil {
+			panic(err)
+		}
+		time.Sleep(100 * time.Millisecond)
+	}
+	if err := shoutingStream.CloseSend(); err != nil {
+		panic(err)
 	}
 
-}
-
-func drainError(err error) {
-	if err != nil {
-		fmt.Printf("[error] %s", err.Error())
-	}
+	<-done
 }
