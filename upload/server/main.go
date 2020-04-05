@@ -46,10 +46,7 @@ func (s *server) Upload(srv upload.DataCenter_UploadServer) error {
 	defer func() {
 		tempFile.Close()
 		os.Remove(tempFile.Name()) // Response
-		srv.SendAndClose(&upload.UploadResult{
-			Size: receivedSize,
-		})
-		fmt.Printf("uploaded: %d\n", receivedSize)
+		fmt.Printf("transferred: %d\n", receivedSize)
 	}()
 
 	// Receive
@@ -57,7 +54,9 @@ func (s *server) Upload(srv upload.DataCenter_UploadServer) error {
 		packet, err := srv.Recv()
 		if err != nil {
 			if err == io.EOF {
-				return nil
+				return srv.SendAndClose(&upload.UploadResult{
+					Size: receivedSize,
+				})
 			}
 			return err
 		}
@@ -70,29 +69,3 @@ func (s *server) Upload(srv upload.DataCenter_UploadServer) error {
 
 	return nil
 }
-
-// func receiveFile(srv upload.DataCenter_UploadServer) (string, uint64, error) {
-// 	// Create temp file
-// 	tempFile, err := ioutil.TempFile("", "")
-// 	if err != nil {
-// 		panic(err)
-// 	}
-// 	defer tempFile.Close()
-//
-// 	// Receive
-// 	var receivedSize uint64
-// 	for {
-// 		packet, err := srv.Recv()
-// 		if err != nil {
-// 			if err == io.EOF {
-// 				return tempFile.Name(), receivedSize, nil
-// 			}
-// 			return "", 0, err
-// 		}
-//
-// 		if _, err := tempFile.Write(packet.Data); err != nil {
-// 			panic(err)
-// 		}
-// 		receivedSize += uint64(len(packet.Data))
-// 	}
-// }

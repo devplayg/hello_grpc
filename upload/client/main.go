@@ -59,13 +59,11 @@ func main() {
 		n, err := file.Read(buf)
 		if err != nil {
 			if err == io.EOF {
-				return
+				break
 			}
 			panic(err)
 		}
-		packet := &upload.Packet{
-			Data: buf[:n],
-		}
+		packet := &upload.Packet{Data: buf[:n]}
 		if err := uploader.Send(packet); err != nil {
 			panic(err)
 		}

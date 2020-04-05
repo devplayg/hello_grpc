@@ -36,7 +36,6 @@ func main() {
 	download.RegisterDataCenterServer(gRpcServer, server(data))
 
 	// Run
-	fmt.Printf("data size: %d\n", len(data))
 	if err := gRpcServer.Serve(ln); err != nil {
 		panic(err)
 	}
@@ -45,6 +44,7 @@ func main() {
 type server []byte
 
 func (s server) Download(_ *empty.Empty, srv download.DataCenter_DownloadServer) error {
+	var sent uint64
 	packet := &download.Packet{}
 	dataLength := len(s)
 
@@ -58,7 +58,10 @@ func (s server) Download(_ *empty.Empty, srv download.DataCenter_DownloadServer)
 		if err := srv.Send(packet); err != nil {
 			return err
 		}
+
+		sent += uint64(len(packet.Data))
 	}
+	fmt.Printf("transferred: %d\n", sent)
 
 	return nil
 }

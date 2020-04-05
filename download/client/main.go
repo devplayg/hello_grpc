@@ -23,7 +23,7 @@ func main() {
 	clientApi := download.NewDataCenterClient(conn)
 
 	// gRPC remote procedure call
-	downloader, err := clientApi.Download(context.Background(), &empty.Empty{})
+	downloadStream, err := clientApi.Download(context.Background(), &empty.Empty{})
 	if err != nil {
 		panic(err)
 	}
@@ -31,7 +31,7 @@ func main() {
 	var data []byte
 	var downloaded int64
 	for {
-		packet, err := downloader.Recv()
+		packet, err := downloadStream.Recv()
 		if err != nil {
 			if err == io.EOF {
 				return
