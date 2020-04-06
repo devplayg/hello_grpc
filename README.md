@@ -1,9 +1,6 @@
 # hello_grpc
 
-gRPC's four kinds of service method
-
-https://grpc.io/docs/guides/concepts/
-
+[gRPC's four kinds of service method in Go](https://grpc.io/docs/guides/concepts/)
 
 |gRPC service method  | Request  | Response  |  Example |
 |:---|:---|:---|:---|
@@ -25,16 +22,16 @@ https://grpc.io/docs/guides/concepts/
 - Client: Single request
 - Server: Stream response
 
-
 [example - Downloading data](./download)
+
 
 #### 3. Client-side streaming RPC
 
 - Client: Stream request
 - Server: Single response
 
-
 [example - Uploading file](./upload)
+
 
 #### 4. Bidirectional streaming RPC  
 
