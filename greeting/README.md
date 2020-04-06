@@ -1,4 +1,4 @@
-## Simple RPC (Unary RPC)
+## Unary RPC
 
 - Client: Single request
 - Server: Single response 

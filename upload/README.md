@@ -1,6 +1,7 @@
-## Client streaming RPC
+## Client-side streaming RPC
 
-`Stream request / Single response` 
+- Client: Stream request
+- Server: Single response 
 
 Generate code
 

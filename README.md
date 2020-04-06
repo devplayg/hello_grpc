@@ -17,7 +17,7 @@ https://grpc.io/docs/guides/concepts/
 - Client: Single request
 - Server: Single response
 
-[ex - Greeting](greeting)
+[example - Greeting](greeting)
 
 
 #### 2. Server-side streaming RPC
@@ -26,7 +26,7 @@ https://grpc.io/docs/guides/concepts/
 - Server: Stream response
 
 
-[ex - Downloading data](./download)
+[example - Downloading data](./download)
 
 #### 3. Client-side streaming RPC
 
@@ -34,14 +34,14 @@ https://grpc.io/docs/guides/concepts/
 - Server: Single response
 
 
-[ex - Uploading file](./upload)
+[example - Uploading file](./upload)
 
 #### 4. Bidirectional streaming RPC  
 
 - Client: Stream request
 - Server: Stream request
 
-[ex - Shouting each other](./referee)
+[example - Shouting each other](./referee)
 
 
 ![4 kinds of service method](4-kinds-of-service-method-2.png)
@@ -49,7 +49,7 @@ https://grpc.io/docs/guides/concepts/
 
 ## Prerequisites
 
-1) [Download Protocol Buffer](https://github.com/protocolbuffers/protobuf/releases)
+1) [Download Protocol Buffer](https://github.com/protocolbuffers/protobuf/releases) and located in $GOPATH
 2) Install `protoc-gen-go` that is a plugin for the Google protocol buffer compiler to generate Go code.
 
 ```sh
