@@ -12,40 +12,57 @@ import (
 	"io/ioutil"
 	"math/rand"
 	"os"
+	"sync"
 	"time"
 )
 
 const (
 	addr       = "localhost:50051"
-	fileSize   = 256 * 1024 * 1024 // 256 MiB
-	bufferSize = 128 * 1024        // 128 KiB
+	fileSize   = 64 * 1024 * 1024 // 64 MiB
+	bufferSize = 64 * 1024        // 64 KiB
 )
 
 func main() {
-	// Connect to gRPC server
+	// Create connection
 	conn, err := grpc.Dial(addr, grpc.WithInsecure())
 	if err != nil {
 		panic(err)
 	}
 	defer conn.Close()
 
-	// Create random file to upload
-	path, err := createTempFile(fileSize)
+	// Create client API for service
+	clientApi := trace.NewDataCenterClient(conn)
+
+	// Trace greeting
+	traceGreet(clientApi)
+
+	// Trace downloading
+	wg := new(sync.WaitGroup)
+	for i := 0; i < 5; i++ {
+		wg.Add(1)
+		go traceDownload(clientApi, wg)
+	}
+	wg.Wait()
+
+	// Trace uploading
+	for i := 0; i < 5; i++ {
+		wg.Add(1)
+		go traceUpload(clientApi, wg)
+	}
+	wg.Wait()
+}
+
+func traceGreet(clientApi trace.DataCenterClient) {
+	res, err := clientApi.SayHello(context.Background(), &trace.HelloRequest{Name: "gopher"})
 	if err != nil {
 		panic(err)
 	}
-
-	// Run
-	client := trace.NewDataCenterClient(conn)
-	for i := 0; i < 20; i++ {
-		go traceDownload(client)
-		go traceUpload(client, path)
-	}
-
-	fmt.Scanln()
+	fmt.Println("[unary] recv: " + res.Message)
 }
 
-func traceDownload(client trace.DataCenterClient) {
+func traceDownload(client trace.DataCenterClient, wg *sync.WaitGroup) {
+	defer wg.Done()
+
 	started := time.Now()
 	downloader, err := client.Download(context.Background(), &empty.Empty{})
 	if err != nil {
@@ -58,10 +75,9 @@ func traceDownload(client trace.DataCenterClient) {
 		if err != nil {
 			if err == io.EOF {
 				checksum := md5.Sum(data)
-				fmt.Printf("downloaded: %d, checksum: %s, time: %3.1f\n", len(data), hex.EncodeToString(checksum[:]), time.Since(started).Seconds())
+				fmt.Printf("[server-side streaming] downloaded: %d, checksum: %s, time: %3.1f\n", len(data), hex.EncodeToString(checksum[:]), time.Since(started).Seconds())
 				return
 			}
-
 			panic(err)
 		}
 
@@ -69,9 +85,17 @@ func traceDownload(client trace.DataCenterClient) {
 	}
 }
 
-func traceUpload(client trace.DataCenterClient, path string) {
+func traceUpload(clientApi trace.DataCenterClient, wg *sync.WaitGroup) {
+	defer wg.Done()
+
+	// Create random file to upload
+	path, checksum, err := createTempFile(fileSize)
+	if err != nil {
+		panic(err)
+	}
+
 	started := time.Now()
-	uploader, err := client.Upload(context.Background())
+	uploader, err := clientApi.Upload(context.Background())
 	if err != nil {
 		panic(err)
 	}
@@ -99,7 +123,7 @@ func traceUpload(client trace.DataCenterClient, path string) {
 				if err != nil {
 					panic(err)
 				}
-				fmt.Printf("uploaded; %d, time: %3.1f\n", fileSize, time.Since(started).Seconds())
+				fmt.Printf("[client-side streaming] uploaded; %d, checksum: %s, time: %3.1f\n", fileSize, hex.EncodeToString(checksum), time.Since(started).Seconds())
 				return
 			}
 			panic(err)
@@ -110,22 +134,27 @@ func traceUpload(client trace.DataCenterClient, path string) {
 			return
 		}
 	}
-
 }
 
 // Create temp file and get checksum
-func createTempFile(size int64) (string, error) {
+func createTempFile(size int64) (string, []byte, error) {
 	data := make([]byte, size)
 	rand.Read(data)
 
 	f, err := ioutil.TempFile("", "")
 	if err != nil {
-		return "", err
+		return "", nil, err
 	}
 	defer f.Close()
 	if _, err := f.Write(data); err != nil {
-		return "", err
+		return "", nil, err
 	}
 
-	return f.Name(), nil
+	f.Seek(0, 0)
+	h := md5.New()
+	if _, err := io.Copy(h, f); err != nil {
+		return f.Name(), nil, err
+	}
+
+	return f.Name(), h.Sum(nil), nil
 }

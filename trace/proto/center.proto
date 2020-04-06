@@ -5,7 +5,7 @@ package trace;
 import "google/protobuf/empty.proto";
 
 service DataCenter {
-    rpc Hello (HelloRequest) returns (HelloResponse) {
+    rpc SayHello (HelloRequest) returns (HelloResponse) {
     }
 
     rpc Download (google.protobuf.Empty) returns (stream Packet) {
@@ -13,11 +13,10 @@ service DataCenter {
 
     rpc Upload (stream Packet) returns (UploadResult) {
     }
-
 }
 
 message HelloRequest {
-    string message = 1;
+    string name = 1;
 }
 
 message HelloResponse {
@@ -29,6 +28,6 @@ message Packet {
 }
 
 message UploadResult {
-    bytes checksum = 1;
-    uint64 size = 2;
+    uint64 size = 1;
+    bytes checksum = 2;
 }
