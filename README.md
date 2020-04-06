@@ -1,8 +1,6 @@
 # hello_grpc
 
-A high-performance, open source universal RPC framework
-
-gRPC lets you define four kinds of service method
+gRPC's four kinds of service method
 
 https://grpc.io/docs/guides/concepts/
 
@@ -14,15 +12,12 @@ https://grpc.io/docs/guides/concepts/
 | `Client-side streaming` | Stream  | Single  | File uploading|
 | `Bidirectional streaming` | Stream | Stream  | Shouting each other|
 
-![4 kinds of service method](4-kinds-of-service-method-2.png)
-
-
-#### 1. Simple RPC (Unary RPC)
+#### 1. Unary RPC
 
 - Client: Single request
 - Server: Single response
 
-[Example](greeting)
+[ex - Greeting](greeting)
 
 
 #### 2. Server-side streaming RPC
@@ -31,7 +26,7 @@ https://grpc.io/docs/guides/concepts/
 - Server: Stream response
 
 
-[Example](./download)
+[ex - Downloading data](./download)
 
 #### 3. Client-side streaming RPC
 
@@ -39,14 +34,17 @@ https://grpc.io/docs/guides/concepts/
 - Server: Single response
 
 
-[Example](./upload)
+[ex - Uploading file](./upload)
 
 #### 4. Bidirectional streaming RPC  
 
 - Client: Stream request
 - Server: Stream request
 
-[Example](./referee)
+[ex - Shouting each other](./referee)
+
+
+![4 kinds of service method](4-kinds-of-service-method-2.png)
 
 
 ## Download Protocol Buffers
@@ -54,3 +52,5 @@ https://grpc.io/docs/guides/concepts/
 https://github.com/protocolbuffers/protobuf/releases
 
     go get -u github.com/golang/protobuf/protoc-gen-go
+    
+    
