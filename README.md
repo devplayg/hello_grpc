@@ -49,7 +49,7 @@ https://grpc.io/docs/guides/concepts/
 
 ## Prerequisites
 
-1) [Download Protocol Buffer](https://github.com/protocolbuffers/protobuf/releases) and located in $GOPATH
+1) [Download Protocol Buffer](https://github.com/protocolbuffers/protobuf/releases) and locate it in $GOPATH
 2) Install `protoc-gen-go` that is a plugin for the Google protocol buffer compiler to generate Go code.
 
 ```sh
