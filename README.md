@@ -52,7 +52,7 @@ https://grpc.io/docs/guides/concepts/
 1) [Download Protocol Buffer](https://github.com/protocolbuffers/protobuf/releases)
 2) Install `protoc-gen-go` that is a plugin for the Google protocol buffer compiler to generate Go code.
 
-
-    go get -u github.com/golang/protobuf/protoc-gen-go
-    
+```sh
+go get -u github.com/golang/protobuf/protoc-gen-go
+``` 
     
