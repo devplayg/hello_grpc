@@ -47,9 +47,11 @@ https://grpc.io/docs/guides/concepts/
 ![4 kinds of service method](4-kinds-of-service-method-2.png)
 
 
-## Download Protocol Buffers
+## Prerequisites
 
-https://github.com/protocolbuffers/protobuf/releases
+1) [Download Protocol Buffer](https://github.com/protocolbuffers/protobuf/releases)
+2) Install `protoc-gen-go` that is a plugin for the Google protocol buffer compiler to generate Go code.
+
 
     go get -u github.com/golang/protobuf/protoc-gen-go
     
