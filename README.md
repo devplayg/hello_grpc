@@ -5,7 +5,7 @@ gRPC's four kinds of service method
 https://grpc.io/docs/guides/concepts/
 
 
-|Method  | Request  | Response  |  Example |
+|gRPC service method  | Request  | Response  |  Example |
 |:---|:---|:---|:---|
 | `Unary`| Single |  Single | Greeting|
 | `Server-side streaming` | Single  | Stream  | File downloading|
