@@ -45,17 +45,14 @@
 
 ## Etc.
 
-#### Trace RPC
-
-- Client: Single request
-- Server: Single response
+#### Trace gRPC
 
 [example - Trace](trace)
 
 #### Secure gRPC  
 
-- Client: Single request
-- Server: Single response
+- Client: Secured ingle request
+- Server: Secured single response
 
 [example - TLS](tls)
 
