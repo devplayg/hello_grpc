@@ -1,6 +1,8 @@
 # hello_grpc
 
-## [gRPC's four kinds of service method in Go](https://grpc.io/docs/guides/concepts/)
+## gRPC's four kinds of service method in Go
+
+[gRPC concept](https://grpc.io/docs/guides/concepts/)
 
 |gRPC service method  | Request  | Response  |  Example |
 |:---|:---|:---|:---|
