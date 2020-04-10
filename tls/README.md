@@ -1,4 +1,4 @@
-## Unary RPC
+## Secure RPC with TLS/SSL
 
 - Client: Single request
 - Server: Single response 
@@ -9,8 +9,8 @@ Generate code
 
 Generate server key and certificate
 
-- server.key: a private RSA key to sign and authenticate the public key
-- server.crt: self-signed X.509 public keys for distribution    
+- `server.key`: a private RSA key to sign and authenticate the public key
+- `server.crt`: self-signed X.509 public keys for distribution    
 
 ```
 openssl req -new -x509 -days 365 -sha256 -newkey rsa:2048 -nodes \
