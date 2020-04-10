@@ -1,19 +1,19 @@
 # Trace
 
-Generate code
+#### Generate code
 
     protoc -I . --go_out=plugins=grpc:. proto/center.proto
     
-Run server
+#### Run server
 
     go run server/main.go
 
-Run client    
+#### Run client    
     
     go run client/main.go
 
 
-### Output
+#### Output
 
 Server output
 

@@ -3,11 +3,11 @@
 - Client: Single request
 - Server: Single response 
 
-### Generate code
+#### Generate code
 
     protoc -I . --go_out=plugins=grpc:. proto/center.proto
 
-### Generate server key and certificate
+#### Generate server key and certificate
 
 - `server.key`: a private RSA key to sign and authenticate the public key
 - `server.crt`: self-signed X.509 public keys for distribution    
@@ -18,11 +18,11 @@ openssl req -new -x509 -days 365 -sha256 -newkey rsa:2048 -nodes \
     -subj "/emailAddress=admin@devplayg.com/CN=devplayg.com/OU=Cert/O=Devplayg/L=Pangyo/ST=Sungnam/C=KR"
 ``` 
 
-### Run server
+#### Run server
 
     go run server/main.go
 
-### Run client    
+#### Run client    
     
 Secure
 
@@ -32,7 +32,7 @@ Insecure
 
     go run client/main-insecure.go
 
-### References
+#### References
     
 - https://jusths.tistory.com/135
 - https://bbengfort.github.io/programmer/2017/03/03/secure-grpc.html

@@ -1,6 +1,6 @@
 # hello_grpc
 
-[gRPC's four kinds of service method in Go](https://grpc.io/docs/guides/concepts/)
+## [gRPC's four kinds of service method in Go](https://grpc.io/docs/guides/concepts/)
 
 |gRPC service method  | Request  | Response  |  Example |
 |:---|:---|:---|:---|
@@ -40,6 +40,22 @@
 
 [example - Shouting each other](./referee)
 
+
+## Etc.
+
+#### Trace RPC
+
+- Client: Single request
+- Server: Single response
+
+[example - Trace](trace)
+
+#### Secure gRPC  
+
+- Client: Single request
+- Server: Single response
+
+[example - TLS](tls)
 
 ![4 kinds of service method](4-kinds-of-service-method-2.png)
 
