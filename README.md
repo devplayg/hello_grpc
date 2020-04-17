@@ -1,8 +1,8 @@
 # hello_grpc
 
-## gRPC's four kinds of service method in Go
+![grpc.png](grpc.png)
 
-[gRPC concept](https://grpc.io/docs/guides/concepts/)
+[gRPC's four kinds of service method in Go](https://grpc.io/docs/guides/concepts/)
 
 |gRPC service method  | Request  | Response  |  Example |
 |:---|:---|:---|:---|
@@ -11,7 +11,7 @@
 | `Client-side streaming` | Stream  | Single  | File uploading|
 | `Bidirectional streaming` | Stream | Stream  | Shouting each other|
 
-#### 1. Unary RPC
+## 1. Unary RPC
 
 - Client: Single request
 - Server: Single response
@@ -19,7 +19,7 @@
 [example - Greeting](greeting)
 
 
-#### 2. Server-side streaming RPC
+## 2. Server-side streaming RPC
 
 - Client: Single request
 - Server: Stream response
@@ -27,7 +27,7 @@
 [example - Downloading data](./download)
 
 
-#### 3. Client-side streaming RPC
+## 3. Client-side streaming RPC
 
 - Client: Stream request
 - Server: Single response
@@ -35,7 +35,7 @@
 [example - Uploading file](./upload)
 
 
-#### 4. Bidirectional streaming RPC  
+## 4. Bidirectional streaming RPC  
 
 - Client: Stream request
 - Server: Stream request
@@ -43,13 +43,13 @@
 [example - Shouting each other](./referee)
 
 
-## Etc.
+# Etc.
 
-#### Trace gRPC
+## Appendix 1 - Tracing
 
 [example - Trace](trace)
 
-#### Secure gRPC  
+## Appendix 2 - Secure gRPC with TLS  
 
 - Client: Secured ingle request
 - Server: Secured single response
