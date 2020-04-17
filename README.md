@@ -4,6 +4,8 @@
 
 [gRPC's four kinds of service method in Go](https://grpc.io/docs/guides/concepts/)
 
+![4 kinds of service method](4-kinds-of-service-method-2.png)
+
 |gRPC service method  | Request  | Response  |  Example |
 |:---|:---|:---|:---|
 | `Unary`| Single |  Single | Greeting|
@@ -55,8 +57,6 @@
 - Server: Secured single response
 
 [example - TLS](tls)
-
-![4 kinds of service method](4-kinds-of-service-method-2.png)
 
 
 ## Prerequisites
